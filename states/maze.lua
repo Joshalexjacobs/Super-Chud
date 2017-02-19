@@ -12,7 +12,7 @@ local cellWidth, cellHeight = 100, 100 -- 100 x 100, 200 x 200, 400 x 300
 local screenWidth, screenHeight = love.graphics.getDimensions()
 local cellsWide, cellsHigh = screenWidth / cellWidth, screenHeight / cellHeight
 local map, drawMap, scaleX, scaleY, quadWidth, quadHeight
-local DEBUG = true
+local DEBUG = false
 -- The path coloring debug option uses images to take advantage of autobatch
 -- Before: 15-60 FPS; After: 60 (steady)
 local indicesImage, colors
@@ -25,11 +25,11 @@ local function debug( self, cellWidth, cellHeight )
 	end
 end
 
-function maze:enter()
+function maze:enter(menu, w, h)
 	done = false
-	love.graphics.setFont( love.graphics.newFont( 12 ) )
-	love.graphics.setBackgroundColor( 255, 255, 255 )
-	love.graphics.setDefaultFilter( 'nearest', 'nearest' )
+
+	cellWidth, cellHeight = w, h
+
 	local mazeImage = love.graphics.newImage( 'lib/maze/maze.png' )
 	local mazeImageWidth, mazeImageHeight = mazeImage:getDimensions()
 	indicesImage = love.graphics.newImage( 'lib/maze/indices.png' )
@@ -93,14 +93,19 @@ function maze:update( dt )
 		local ddone = d:step()
 		local edone = e:step()
 
-		if not ( adone or bdone or cdone or ddone or edone ) then
+		if not (adone or bdone or cdone or ddone or edone) then
 			done = true
 			connector:connect()
 		else
 			connector:update()
 		end
 	elseif done then
-		Gamestate.switch(menu) -- when finished, switch to the main menu
+		local level = {
+			map = map,
+			draw = drawMap
+		}
+
+		Gamestate.switch(game, level) -- when finished, switch to the main menu
 	end
 end
 
@@ -108,31 +113,16 @@ function maze:draw()
 	love.graphics.setColor({255, 255, 255, 255})
 
 	if DEBUG then
-		debug( a, cellWidth, cellHeight )
-		debug( b, cellWidth, cellHeight )
-		debug( c, cellWidth, cellHeight )
-		debug( d, cellWidth, cellHeight )
-		debug( e, cellWidth, cellHeight )
+		debug(a, cellWidth, cellHeight)
+		debug(b, cellWidth, cellHeight)
+		debug(c, cellWidth, cellHeight)
+		debug(d, cellWidth, cellHeight)
+		debug(e, cellWidth, cellHeight)
 	end
 
-	drawMap( map )
+	drawMap(map)
 end
 
 function maze:keyreleased( key )
 	if key == 'escape' then love.event.quit() end
 end
-
---[[
-function love.wheelmoved( x, y )
-	if y > 0 then -- Wheel up
-		cellWidth, cellHeight = cellWidth + 5, cellHeight + 5
-		cellWidth = cellWidth < screenWidth / 4 and cellWidth or math.floor( screenWidth / 4 )
-		cellHeight = cellHeight < screenHeight / 4 and cellHeight or math.floor( screenHeight / 4 )
-	elseif y < 0 then -- Wheel down
-		cellWidth, cellHeight = cellWidth - 5, cellHeight - 5
-		cellWidth = cellWidth > quadWidth and cellWidth or quadWidth
-		cellHeight = cellHeight > quadWidth and cellWidth or quadWidth
-	end
-	love.load()
-end
-]]
