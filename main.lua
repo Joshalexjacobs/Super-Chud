@@ -1,5 +1,11 @@
 --main.lua
 
+Gamestate = require "lib/Gamestate"
+
+-- states
+require "states/menu"
+require "states/maze"
+
 function love:keypressed(key, code)
   if key == 'escape' then -- quit on escape
     love.event.quit()
@@ -8,12 +14,7 @@ end
 
 function love.load(arg)
   -- load stuff
-end
 
-function love.update(dt)
-  -- update stuff
-end
-
-function love.draw()
-  love.graphics.printf("Hello world", 400, 400, 800)
+  Gamestate.registerEvents()
+  Gamestate.switch(maze) -- swtich to game screen
 end
